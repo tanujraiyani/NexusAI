@@ -13,12 +13,24 @@ from app.common.responses import success_response
 from app.core.security import create_access_token
 from app.db.database import get_db
 from app.dependencies.auth import get_current_user
+from app.dependencies.permissions import require_role
+from app.common.auth_context import AuthContext
+
 
 router = APIRouter(
     prefix="/auth",
     tags=["Authentication"],
 )
 
+@router.get("/owner-only")
+def owner_only(
+    ctx: AuthContext = Depends(require_role("owner")),
+):
+    return {
+        "message": f"Welcome {ctx.user.full_name}",
+        "organization": ctx.organization_id,
+        "role": ctx.role,
+    }
 
 @router.post("/register", status_code=201)
 def register(
